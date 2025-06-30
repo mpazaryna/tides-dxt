@@ -211,7 +211,9 @@ async def flow_tide_handler(args: dict) -> dict[str, Any]:
         ).isoformat()
 
         # Add flow to tide history
-        intensity = validated_args.intensity or "moderate"  # Default to moderate if None
+        intensity = (
+            validated_args.intensity or "moderate"
+        )  # Default to moderate if None
         flow_entry = FlowEntry(
             timestamp=flow_started,
             intensity=intensity,
