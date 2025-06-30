@@ -1,85 +1,102 @@
 # Package Release
 
 ## Overview
-This command automates the release process for Tides DXT, including updating the changelog, version numbers, creating git tags, and building the distribution package.
+This command automates the release process for Tides DXT. When you run this command, I will handle all the release steps including updating the changelog, version numbers, creating git tags, and building the distribution package.
 
-## Process
-The command will:
-1. Prompt for the new version number and release type (patch/minor/major)
-2. Update CHANGELOG.md with the new version section
-3. Update manifest.json with the new version
-4. Commit the changes
-5. Create a git tag
-6. Build the DXT package
-7. Display the release summary
+## What I'll Do
 
-## Usage
-Run this command when you're ready to create a new release. Make sure all changes are committed before starting.
+When you run `/project:package-release`, I will:
 
-### Steps:
-1. **Version Selection**
-   - Ask for the new version number (e.g., 0.2.1, 0.3.0, 1.0.0)
-   - Validate it follows semantic versioning
+1. **Pre-release Checks**
+   - Check git status to ensure working directory is clean
+   - Run tests with `uv run pytest`
+   - Run linting with `uv run ruff check .`
+   - Run type checking with `uv run mypy server/`
 
-2. **Changelog Update**
-   - Move items from [Unreleased] to the new version section
-   - Add the current date
-   - Prompt for any additional release notes
+2. **Version Management**
+   - Read current version from manifest.json
+   - Ask you for the new version number
+   - Validate it follows semantic versioning (X.Y.Z)
+   - Ensure new version is greater than current version
 
-3. **Manifest Update**
-   - Update the version field in manifest.json
+3. **Update Files**
+   - Update version in `manifest.json`
+   - Update `CHANGELOG.md`:
+     - Move content from [Unreleased] to new version section
+     - Add current date to version header
+     - Ask if you want to add any additional release notes
 
 4. **Git Operations**
-   - Stage CHANGELOG.md and manifest.json
-   - Create a commit with message: "Release v{version}"
-   - Create an annotated tag: `git tag -a v{version} -m "Release v{version}"`
+   - Stage `manifest.json` and `CHANGELOG.md`
+   - Create commit: `git commit -m "Release v{version}"`
+   - Create annotated tag: `git tag -a v{version} -m "Release v{version}"`
 
 5. **Build Package**
    - Run `python build-dxt.py`
-   - Rename the output file to include version: `tides-v{version}.dxt`
+   - Rename output to include version: `tides-v{version}.dxt`
 
-6. **Summary**
-   - Display the release summary
-   - Show the location of the built package
-   - Remind to push tags: `git push origin main --tags`
+6. **Final Summary**
+   - Show release summary with version, tag, and package location
+   - Remind you to push: `git push origin main --tags`
+   - Suggest creating a GitHub release
 
-## Implementation
+## Usage
 
-A release automation script is available at `scripts/package-release.py` that handles all these steps automatically:
+Simply run: `/project:package-release`
 
-```bash
-# Run the release script
-python scripts/package-release.py
+I'll guide you through the process interactively, asking for:
+- New version number
+- Additional release notes (optional)
+- Confirmation before proceeding
 
-# Or if you prefer
-./scripts/package-release.py
+## Requirements
+
+Before running this command:
+- Ensure all changes are committed (`git status` should be clean)
+- Document any changes in the [Unreleased] section of CHANGELOG.md
+- Make sure you're on the main branch
+
+## Example Session
+
 ```
+You: /project:package-release
 
-The script will:
-1. Run pre-release checks (tests, linting, type checking)
-2. Prompt for the new version number
-3. Update manifest.json and CHANGELOG.md
-4. Create git commit and tag
-5. Build the DXT package with version in filename
-6. Provide next steps for pushing to GitHub
+Me: I'll help you create a new release for Tides DXT.
 
-## Example Workflow
-```bash
-# 1. Ensure all changes are committed
-git status
+First, let me run the pre-release checks...
+✅ Git working directory is clean
+✅ Tests passed (23 tests)
+✅ Linting passed
+✅ Type checking passed
 
-# 2. Run the release script
-python scripts/package-release.py
+Current version: 0.2.0
 
-# 3. Follow the prompts
-# 4. Test the generated DXT package
-# 5. Push to GitHub with tags
-git push origin main --tags
+What should the new version be? (e.g., 0.2.1, 0.3.0, 1.0.0)
+
+You: 0.3.0
+
+Me: Would you like to add any additional release notes beyond what's in [Unreleased]? (optional)
+
+You: Added automated release tooling
+
+Me: Great! Here's what I'll do:
+- Update version from 0.2.0 to 0.3.0
+- Update CHANGELOG.md with today's date
+- Create git commit and tag v0.3.0
+- Build tides-v0.3.0.dxt
+
+Proceed? (y/n)
+
+You: y
+
+Me: [executes all steps]
+
+✅ Release v0.3.0 completed successfully!
+- Package: tides-v0.3.0.dxt (6.59 MB)
+- Tag: v0.3.0
+
+Next steps:
+1. Test the package locally
+2. Push to GitHub: git push origin main --tags
+3. Create GitHub release and upload tides-v0.3.0.dxt
 ```
-
-## Pre-release Checklist
-- [ ] All tests passing (`uv run pytest`)
-- [ ] Linting clean (`uv run ruff check .`)
-- [ ] Type checking passes (`uv run mypy server/`)
-- [ ] CHANGELOG.md has unreleased changes documented
-- [ ] No uncommitted changes (`git status`)
