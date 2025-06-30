@@ -9,8 +9,7 @@ from typing import Any, Literal
 
 from mcp import types
 from pydantic import BaseModel, Field
-
-from server.storage.tide_storage import (
+from storage.tide_storage import (
     CreateTideInput,
     FlowEntry,
     ListTidesFilter,
@@ -358,7 +357,9 @@ async def end_tide_handler(args: dict) -> dict[str, Any]:
                     duration=0,
                     notes=validated_args.notes,
                 )
-                await tide_storage.add_flow_to_tide(validated_args.tide_id, completion_flow)
+                await tide_storage.add_flow_to_tide(
+                    validated_args.tide_id, completion_flow
+                )
 
         await tide_storage.update_tide(validated_args.tide_id, updates)
 

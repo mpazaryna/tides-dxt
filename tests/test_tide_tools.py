@@ -252,9 +252,7 @@ class TestTideTools:
         """Test ending non-existent tide"""
         args = {"tide_id": "nonexistent", "status": "completed"}
 
-        with patch(
-            "server.tools.tide_tools.tide_storage.get_tide", return_value=None
-        ):
+        with patch("server.tools.tide_tools.tide_storage.get_tide", return_value=None):
             result = await end_tide_handler(args)
 
         assert result["success"] is False
