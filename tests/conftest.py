@@ -1,11 +1,13 @@
 """
 Pytest configuration and fixtures
 """
+
 import asyncio
-import pytest
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
+
+import pytest
 
 from server.storage.tide_storage import TideStorage
 

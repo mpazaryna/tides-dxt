@@ -5,23 +5,22 @@ Tides MCP Server
 A rhythmic workflow management system inspired by natural tidal patterns.
 Helps create sustainable productivity cycles through tidal flows.
 """
+
 import asyncio
 import logging
 import sys
 
-from mcp.server import Server, NotificationOptions
-from mcp.server.models import InitializationOptions
 import mcp.server.stdio
 from mcp import types
-
-from tools.tide_tools import tide_tools, tide_handlers
-
+from mcp.server import NotificationOptions, Server
+from mcp.server.models import InitializationOptions
+from tools.tide_tools import tide_handlers, tide_tools
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(sys.stderr)]
+    handlers=[logging.StreamHandler(sys.stderr)],
 )
 
 logger = logging.getLogger(__name__)
@@ -43,19 +42,16 @@ async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent
     """Call a tool by name"""
     if name not in tide_handlers:
         raise ValueError(f"Unknown tool: {name}")
-    
+
     result = await tide_handlers[name](arguments)
-    
-    return [types.TextContent(
-        type="text",
-        text=str(result)
-    )]
+
+    return [types.TextContent(type="text", text=str(result))]
 
 
 async def main():
     """Main server function"""
     logger.info("🌊 Starting Tides MCP Server...")
-    
+
     # Server options
     options = InitializationOptions(
         server_name="tides",
@@ -65,7 +61,7 @@ async def main():
             experimental_capabilities={},
         ),
     )
-    
+
     # Run the server
     async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
         await server.run(
