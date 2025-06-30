@@ -49,7 +49,6 @@ def build_dxt():
                 "install",
                 "--target",
                 str(lib_dir),
-                "--no-deps",
                 "mcp>=1.0.0",
                 "pydantic>=2.0.0",
                 "python-dotenv>=1.0.0",

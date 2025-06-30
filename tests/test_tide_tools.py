@@ -10,9 +10,11 @@ import pytest
 from server.storage.tide_storage import TideData
 from server.tools.tide_tools import (
     CreateTideInputSchema,
+    EndTideInputSchema,
     FlowTideInputSchema,
     ListTidesInputSchema,
     create_tide_handler,
+    end_tide_handler,
     flow_tide_handler,
     list_tides_handler,
 )
@@ -207,3 +209,54 @@ class TestTideTools:
         flow_schema = FlowTideInputSchema(tide_id="test_id")
         assert flow_schema.intensity == "moderate"
         assert flow_schema.duration == 25
+
+        # Test end tide schema
+        end_schema = EndTideInputSchema(tide_id="test_123")
+        assert end_schema.status == "completed"
+        assert end_schema.notes is None
+
+    @pytest.mark.asyncio
+    async def test_end_tide_handler_success(self):
+        """Test successful tide completion"""
+        args = {"tide_id": "tide_123", "status": "completed", "notes": "Great session!"}
+
+        mock_tide = TideData(
+            id="tide_123",
+            name="Test Tide",
+            flow_type="daily",
+            status="active",
+            created_at=datetime.now().isoformat(),
+            flow_history=[],
+        )
+
+        with patch(
+            "server.tools.tide_tools.tide_storage.get_tide", return_value=mock_tide
+        ):
+            with patch(
+                "server.tools.tide_tools.tide_storage.update_tide",
+                return_value=mock_tide,
+            ):
+                with patch(
+                    "server.tools.tide_tools.tide_storage.add_flow_to_tide",
+                    return_value=mock_tide,
+                ):
+                    result = await end_tide_handler(args)
+
+        assert result["success"] is True
+        assert result["tide_id"] == "tide_123"
+        assert result["final_status"] == "completed"
+        assert "completed successfully" in result["summary"]
+
+    @pytest.mark.asyncio
+    async def test_end_tide_handler_not_found(self):
+        """Test ending non-existent tide"""
+        args = {"tide_id": "nonexistent", "status": "completed"}
+
+        with patch(
+            "server.tools.tide_tools.tide_storage.get_tide", return_value=None
+        ):
+            result = await end_tide_handler(args)
+
+        assert result["success"] is False
+        assert result["final_status"] == "not_found"
+        assert result["summary"] == "Tide not found"

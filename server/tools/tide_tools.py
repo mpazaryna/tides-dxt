@@ -10,7 +10,7 @@ from typing import Any, Literal
 from mcp import types
 from pydantic import BaseModel, Field
 
-from ..storage.tide_storage import (
+from storage.tide_storage import (
     CreateTideInput,
     FlowEntry,
     ListTidesFilter,
@@ -22,6 +22,24 @@ logger = logging.getLogger(__name__)
 # Initialize storage (use mounted volume in Docker or local directory for development)
 
 storage_path = os.getenv("TIDES_STORAGE_PATH", "./tides_data")
+# Expand user home directory if present
+if storage_path.startswith("~/"):
+    storage_path = os.path.expanduser(storage_path)
+elif "${HOME}" in storage_path:
+    storage_path = storage_path.replace("${HOME}", os.path.expanduser("~"))
+
+# If using default relative path, try to use a more appropriate location
+if storage_path == "./tides_data":
+    # Try to use user's home directory as fallback
+    try:
+        home_path = os.path.expanduser("~/Documents/tides_data")
+        # Test if we can create the directory
+        os.makedirs(home_path, exist_ok=True)
+        storage_path = home_path
+    except Exception:
+        # If that fails, keep the original path
+        pass
+
 tide_storage = TideStorage(storage_path)
 
 
@@ -96,6 +114,28 @@ class FlowTideOutputSchema(BaseModel):
     next_actions: list[str]
 
 
+class EndTideInputSchema(BaseModel):
+    """Schema for ending a tide"""
+
+    tide_id: str = Field(description="ID of the tide to end")
+    status: Literal["completed", "paused"] = Field(
+        default="completed", description="How to end the tide"
+    )
+    notes: str | None = Field(
+        default=None, description="Optional notes about ending the tide"
+    )
+
+
+class EndTideOutputSchema(BaseModel):
+    """Schema for end tide output"""
+
+    success: bool
+    tide_id: str
+    final_status: str
+    completion_time: str
+    summary: str
+
+
 # Tool definitions
 tide_tools: list[types.Tool] = [
     types.Tool(
@@ -112,6 +152,11 @@ tide_tools: list[types.Tool] = [
         name="flow_tide",
         description="Start a flow session for a specific tidal workflow",
         inputSchema=FlowTideInputSchema.model_json_schema(),
+    ),
+    types.Tool(
+        name="end_tide",
+        description="End a tidal workflow by completing or pausing it",
+        inputSchema=EndTideInputSchema.model_json_schema(),
     ),
 ]
 
@@ -265,9 +310,94 @@ async def flow_tide_handler(args: dict) -> dict[str, Any]:
         ).model_dump()
 
 
+async def end_tide_handler(args: dict) -> dict[str, Any]:
+    """Handle ending a tide"""
+    validated_args = EndTideInputSchema(**args)
+
+    try:
+        # Verify tide exists
+        tide = await tide_storage.get_tide(validated_args.tide_id)
+        if not tide:
+            return EndTideOutputSchema(
+                success=False,
+                tide_id=validated_args.tide_id,
+                final_status="not_found",
+                completion_time="",
+                summary="Tide not found",
+            ).model_dump()
+
+        # Check if tide is already completed or paused
+        if tide.status in ["completed", "paused"]:
+            return EndTideOutputSchema(
+                success=False,
+                tide_id=validated_args.tide_id,
+                final_status=tide.status,
+                completion_time=tide.created_at,
+                summary=f"Tide is already {tide.status}",
+            ).model_dump()
+
+        completion_time = datetime.now().isoformat()
+
+        # Update tide status
+        updates = {
+            "status": validated_args.status,
+            "last_flow": completion_time,
+        }
+
+        # Add completion notes if provided
+        if validated_args.notes:
+            if tide.flow_history:
+                # Add notes to the last flow entry
+                last_flow = tide.flow_history[-1]
+                last_flow.notes = validated_args.notes
+            else:
+                # Create a completion flow entry
+                completion_flow = FlowEntry(
+                    timestamp=completion_time,
+                    intensity="gentle",
+                    duration=0,
+                    notes=validated_args.notes,
+                )
+                await tide_storage.add_flow_to_tide(validated_args.tide_id, completion_flow)
+
+        updated_tide = await tide_storage.update_tide(validated_args.tide_id, updates)
+
+        # Generate summary
+        flow_count = len(tide.flow_history)
+        summary_map = {
+            "completed": f"🌊 Tide '{tide.name}' completed successfully with {flow_count} flow sessions. The natural rhythm has reached its conclusion.",
+            "paused": f"🌊 Tide '{tide.name}' paused gracefully with {flow_count} flow sessions. The flow can resume when energy returns.",
+        }
+
+        summary = summary_map[validated_args.status]
+
+        logger.info(
+            f"Ended tide: {validated_args.tide_id} with status {validated_args.status}"
+        )
+
+        return EndTideOutputSchema(
+            success=True,
+            tide_id=validated_args.tide_id,
+            final_status=validated_args.status,
+            completion_time=completion_time,
+            summary=summary,
+        ).model_dump()
+
+    except Exception as error:
+        logger.error(f"Failed to end tide: {error}")
+        return EndTideOutputSchema(
+            success=False,
+            tide_id=validated_args.tide_id,
+            final_status="error",
+            completion_time="",
+            summary=f"Failed to end tide: {error}",
+        ).model_dump()
+
+
 # Handler mapping
 tide_handlers = {
     "create_tide": create_tide_handler,
     "list_tides": list_tides_handler,
     "flow_tide": flow_tide_handler,
+    "end_tide": end_tide_handler,
 }

@@ -57,7 +57,7 @@
       "type": "directory",
       "title": "Storage Directory", 
       "description": "Directory to store tide data",
-      "default": "./tides_data",
+      "default": "~/Documents/tides_data",
       "required": false
     }
   },

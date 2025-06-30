@@ -134,6 +134,7 @@ This project includes custom slash commands in `.claude/commands/` for common wo
 - `/project:analyze-tides [focus]`: Analyze tide data and productivity patterns
 - `/project:fix-github-issue [number]`: Fix GitHub issues with full workflow
 - `/project:write-github-issue [requirements]`: Create well-formatted GitHub issues from planning sessions
+- `/project:package-release`: Automate the release process (changelog, version, tag, build)
 
 Use these commands to streamline development tasks while maintaining project conventions.
 
