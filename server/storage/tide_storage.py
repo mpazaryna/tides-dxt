@@ -61,15 +61,15 @@ class TideStorage:
         self.data_dir = Path(data_dir)
         try:
             self.data_dir.mkdir(parents=True, exist_ok=True)
-        except PermissionError:
+        except PermissionError as e:
             raise RuntimeError(
                 f"Permission denied creating storage directory: {self.data_dir}. "
                 "Please configure a writable storage path in the extension settings."
-            )
+            ) from e
         except Exception as e:
             raise RuntimeError(
                 f"Failed to create storage directory: {self.data_dir}. Error: {e}"
-            )
+            ) from e
 
     async def create_tide(self, input_data: CreateTideInput) -> TideData:
         """Create a new tide"""

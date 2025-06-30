@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Automated Release Command**: New `/project:package-release` custom command for streamlined releases
+  - Automates version updates, changelog management, and package building
+  - Includes pre-release checks for tests, linting, and type safety
+  - Creates versioned DXT packages automatically
+
+### Fixed
+- **Storage Path Initialization**: Improved default storage handling for better first-run experience
+  - Changed default path from `./tides_data` to `~/Documents/tides_data`
+  - Added fallback logic when default path isn't writable
+  - Better error messages for permission issues
+- **Import Paths**: Fixed relative import issues in tide_tools.py for proper test execution
+
 ## [0.2.0] - 2025-06-30
 
 ### Added

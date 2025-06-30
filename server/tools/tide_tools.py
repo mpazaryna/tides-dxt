@@ -10,7 +10,7 @@ from typing import Any, Literal
 from mcp import types
 from pydantic import BaseModel, Field
 
-from storage.tide_storage import (
+from server.storage.tide_storage import (
     CreateTideInput,
     FlowEntry,
     ListTidesFilter,
@@ -360,7 +360,7 @@ async def end_tide_handler(args: dict) -> dict[str, Any]:
                 )
                 await tide_storage.add_flow_to_tide(validated_args.tide_id, completion_flow)
 
-        updated_tide = await tide_storage.update_tide(validated_args.tide_id, updates)
+        await tide_storage.update_tide(validated_args.tide_id, updates)
 
         # Generate summary
         flow_count = len(tide.flow_history)
