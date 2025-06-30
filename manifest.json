@@ -1,16 +1,45 @@
 {
+  "dxt_version": "0.1",
   "name": "tides",
-  "version": "0.1.0",
+  "display_name": "Tides - Rhythmic Productivity",
+  "version": "0.2.0",
   "description": "Rhythmic workflow management based on natural tidal patterns for sustainable productivity",
   "author": {
     "name": "Tides DXT Contributors",
     "email": "contact@example.com"
   },
-  "main": "server/main.py",
-  "mcp": {
-    "version": "1.0.0",
-    "transport": "stdio"
+  "server": {
+    "type": "python",
+    "entry_point": "server/main.py",
+    "mcp_config": {
+      "command": "/opt/homebrew/bin/python3",
+      "args": [
+        "${__dirname}/server/main.py"
+      ],
+      "env": {
+        "PYTHONPATH": "${__dirname}/server/lib",
+        "TIDES_STORAGE_PATH": "${user_config.storage_path}"
+      }
+    }
   },
+  "tools": [
+    {
+      "name": "create_tide",
+      "description": "Create a new tidal workflow for rhythmic productivity"
+    },
+    {
+      "name": "list_tides",
+      "description": "List all tidal workflows with their current status"
+    },
+    {
+      "name": "flow_tide",
+      "description": "Start a flow session for a specific tidal workflow"
+    },
+    {
+      "name": "end_tide",
+      "description": "End a tidal workflow by completing or pausing it"
+    }
+  ],
   "license": "MIT",
   "homepage": "https://github.com/yourusername/tides-dxt",
   "repository": {
@@ -23,12 +52,13 @@
   "categories": ["productivity", "workflow", "time-management"],
   "keywords": ["tides", "productivity", "workflow", "pomodoro", "time-management", "mcp"],
   "icon": "icon.png",
-  "settings": {
+  "user_config": {
     "storage_path": {
-      "type": "string",
-      "description": "Path to store tide data",
+      "type": "directory",
+      "title": "Storage Directory", 
+      "description": "Directory to store tide data",
       "default": "./tides_data",
-      "env": "TIDES_STORAGE_PATH"
+      "required": false
     }
   },
   "dependencies": {
