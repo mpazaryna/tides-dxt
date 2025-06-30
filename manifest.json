@@ -1,0 +1,37 @@
+{
+  "name": "tides",
+  "version": "0.1.0",
+  "description": "Rhythmic workflow management based on natural tidal patterns for sustainable productivity",
+  "author": {
+    "name": "Tides DXT Contributors",
+    "email": "contact@example.com"
+  },
+  "main": "server/main.py",
+  "mcp": {
+    "version": "1.0.0",
+    "transport": "stdio"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/yourusername/tides-dxt",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/tides-dxt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/tides-dxt/issues"
+  },
+  "categories": ["productivity", "workflow", "time-management"],
+  "keywords": ["tides", "productivity", "workflow", "pomodoro", "time-management", "mcp"],
+  "icon": "icon.png",
+  "settings": {
+    "storage_path": {
+      "type": "string",
+      "description": "Path to store tide data",
+      "default": "./tides_data",
+      "env": "TIDES_STORAGE_PATH"
+    }
+  },
+  "dependencies": {
+    "python": ">=3.11"
+  }
+}
