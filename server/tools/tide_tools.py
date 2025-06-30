@@ -7,7 +7,7 @@ import os
 from datetime import datetime, timedelta
 from typing import Any, Literal
 
-from mcp.types import Tool
+from mcp import types
 from pydantic import BaseModel, Field
 
 from ..storage.tide_storage import (
@@ -97,18 +97,18 @@ class FlowTideOutputSchema(BaseModel):
 
 
 # Tool definitions
-tide_tools: list[Tool] = [
-    Tool(
+tide_tools: list[types.Tool] = [
+    types.Tool(
         name="create_tide",
         description="Create a new tidal workflow for rhythmic productivity",
         inputSchema=CreateTideInputSchema.model_json_schema(),
     ),
-    Tool(
+    types.Tool(
         name="list_tides",
         description="List all tidal workflows with their current status",
         inputSchema=ListTidesInputSchema.model_json_schema(),
     ),
-    Tool(
+    types.Tool(
         name="flow_tide",
         description="Start a flow session for a specific tidal workflow",
         inputSchema=FlowTideInputSchema.model_json_schema(),
@@ -205,15 +205,17 @@ async def flow_tide_handler(args: dict) -> dict[str, Any]:
             ).model_dump()
 
         flow_started = datetime.now().isoformat()
+        duration = validated_args.duration or 25  # Default to 25 if None
         estimated_completion = (
-            datetime.now() + timedelta(minutes=validated_args.duration)
+            datetime.now() + timedelta(minutes=duration)
         ).isoformat()
 
         # Add flow to tide history
+        intensity = validated_args.intensity or "moderate"  # Default to moderate if None
         flow_entry = FlowEntry(
             timestamp=flow_started,
-            intensity=validated_args.intensity,
-            duration=validated_args.duration,
+            intensity=intensity,
+            duration=duration,
         )
 
         await tide_storage.add_flow_to_tide(validated_args.tide_id, flow_entry)
@@ -225,7 +227,7 @@ async def flow_tide_handler(args: dict) -> dict[str, Any]:
             "strong": "🌊 Dive deep with sustained concentration. Channel energy into meaningful progress. Push through resistance mindfully.",
         }
 
-        flow_guidance = guidance_map[validated_args.intensity]
+        flow_guidance = guidance_map[intensity]
 
         next_actions = [
             "🎯 Set clear intention for this flow session",

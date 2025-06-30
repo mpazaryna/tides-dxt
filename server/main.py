@@ -27,14 +27,14 @@ logger = logging.getLogger(__name__)
 
 
 # Create the MCP server instance
-server = Server("tides")
+server: Server = Server("tides")
 
 
 # Register tool handlers
 @server.list_tools()
 async def handle_list_tools() -> list[types.Tool]:
     """List available tools"""
-    return tide_tools
+    return list(tide_tools)
 
 
 @server.call_tool()

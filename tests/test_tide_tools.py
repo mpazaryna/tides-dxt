@@ -135,7 +135,7 @@ class TestTideTools:
         assert result["tide_id"] == "tide_123"
         assert result["flow_started"] is not None
         assert result["estimated_completion"] is not None
-        assert "moderate" in result["flow_guidance"].lower()
+        assert "focused attention" in result["flow_guidance"].lower()
         assert len(result["next_actions"]) > 0
 
     @pytest.mark.asyncio
