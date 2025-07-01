@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Import Path Compatibility**: Add try/except block for imports to work in both development and DXT environments
+  - Fixes ModuleNotFoundError when running as Claude Desktop extension
+  - Maintains compatibility with pytest and local development
+
 ## [0.3.0] - 2025-06-30
 
 ### Added
