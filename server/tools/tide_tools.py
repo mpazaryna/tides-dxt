@@ -9,12 +9,22 @@ from typing import Any, Literal
 
 from mcp import types
 from pydantic import BaseModel, Field
-from storage.tide_storage import (
-    CreateTideInput,
-    FlowEntry,
-    ListTidesFilter,
-    TideStorage,
-)
+
+# Use absolute import when running as a module, relative import otherwise
+try:
+    from storage.tide_storage import (
+        CreateTideInput,
+        FlowEntry,
+        ListTidesFilter,
+        TideStorage,
+    )
+except ImportError:
+    from ..storage.tide_storage import (
+        CreateTideInput,
+        FlowEntry,
+        ListTidesFilter,
+        TideStorage,
+    )
 
 logger = logging.getLogger(__name__)
 
